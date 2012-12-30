@@ -13,23 +13,20 @@ public:
 
     Float2 letter_pos[MAX_LETTERS];
     unsigned letter_ofs[MAX_LETTERS];
-    float angle;
 
-    const float hh = (M_2_PI/100.0)*2;
-    const float spd = 0.07;
-    const float letter_spd = 0.4;
-    const float scroll_spd = 0.9;
+    const float scroll_spd = 1.5;
     const float amplitude = 28;
+    const float frequency = 1.5;
+    const unsigned padding = 8;
 
 
-    void init(Float2 topLeft, const char *string, unsigned padding=7)
+    void init(Float2 topLeft, const char *string)
     {
         letters = string;
         for (letter_size=0; string[letter_size]; letter_size++)
             ;
         n_letters = MIN(letter_size,MAX_LETTERS);
         pos = topLeft;
-        angle = spd;
         for (unsigned i=0; i < n_letters; i++) {
             letter_pos[i].x = pos.x + i*(8+padding);
             letter_ofs[i] = i;
@@ -40,7 +37,6 @@ public:
 
     void paint(VideoBuffer *vbuf)
     {
-        float h = angle;
         for (unsigned i=0; i < n_letters; i++) {
             unsigned frame = letters[letter_ofs[i]] - ' ';
             vbuf->sprites[i].setImage(Font, frame);
@@ -51,18 +47,13 @@ public:
 
     void tick()
     {
-        angle += spd;
-
-        float h = angle;
         for (unsigned i=0; i < n_letters; i++) {
             letter_pos[i].x -= scroll_spd;
-            letter_pos[i].y = pos.y + tsin(h)*amplitude;
-            h += letter_spd + hh;
-
             if (letter_pos[i].x < 0) {
                 letter_ofs[i] = (letter_ofs[i] + n_letters) % letter_size;
                 letter_pos[i].x = 120;
             }
+            letter_pos[i].y = pos.y + tsin(frequency * letter_pos[i].x * M_PI/180) * amplitude;
         }
     }
 
@@ -116,7 +107,7 @@ public:
 
         cubes_new = CubeSet::connected();
 
-        string.init(vec(40, 56), "WRITTEN BY LiTHiUM (2012)...       MUSIC BY MQ4 (ASTRAL LIFE)...         SIFTEOS!                  ");
+        string.init(vec(120, 56), "LITHIUM DeMo ReLeAsE\"     CODE: \"LiTHiUM\" <2012>       MUSIC: $Astral Life$ <mq4>         [SiFTe0S!]                  ");
 
         Events::cubeConnect.set(&Demo::onCubeConnect, this);
         Events::cubeDisconnect.set(&Demo::onCubeDisconnect, this);
